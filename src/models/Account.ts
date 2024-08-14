@@ -1,20 +1,25 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
-import { Transaction } from "./Transaction";
+import Transaction from "./Transaction";
 
 @Entity()
-export class Account {
+class Account {
   @PrimaryGeneratedColumn()
   id?: number;
 
-  @Column()
-  accountNumber?: string;
+  @Column({ unique: true })
+  accountNumber!: string;
+
+  @Column('decimal', { precision: 10, scale: 2, default: 0.0 })
+  balance!: number;
 
   @Column()
-  balance?: number;
+  ownerName!: string;
 
   @Column()
-  ownerName?: string;
+  document!: string;
 
-  @OneToMany(() => Transaction, transaction => transaction.account)
+  @OneToMany(() => Transaction, (transaction) => transaction.account)
   transactions?: Transaction[];
 }
+
+export default Account;

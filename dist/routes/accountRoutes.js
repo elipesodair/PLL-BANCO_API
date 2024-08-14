@@ -8,51 +8,34 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const Account_1 = require("../models/Account");
-const typeorm_1 = require("typeorm");
+const data_source_1 = require("../data-source");
+const Account_1 = __importDefault(require("../models/Account"));
 const router = (0, express_1.Router)();
-// Rota para criar uma nova conta
-router.post("/account", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { numeroConta, saldoAtual, nomeCliente } = req.body;
-    // Criando uma nova instância de Account
-    const account = new Account_1.Account();
-    account.accountNumber = numeroConta;
-    account.balance = saldoAtual;
-    account.ownerName = nomeCliente;
-    try {
-        // Salvando a conta no banco de dados usando o TypeORM
-        const accountRepository = (0, typeorm_1.getRepository)(Account_1.Account);
-        yield accountRepository.save(account);
-        res.status(201).json(account);
+// Endpoint para criar uma nova conta
+router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { accountNumber, balance, ownerName, document } = req.body;
+    if (!accountNumber || balance === undefined || !ownerName || !document) {
+        return res.status(400).json({ message: "Dados incompletos para criar a conta" });
     }
-    catch (error) {
-        res.status(500).json({ message: "Erro ao criar a conta", error });
-    }
-}));
-// Rota para buscar uma conta pelo número da conta
-router.get("/account/:accountNumber", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const accountNumber = req.params.accountNumber;
     try {
-        // Buscando a conta no banco de dados pelo número da conta
-        const accountRepository = (0, typeorm_1.getRepository)(Account_1.Account);
-        const account = yield accountRepository.findOne({
-            where: { accountNumber },
+        const accountRepository = data_source_1.AppDataSource.getRepository(Account_1.default);
+        const newAccount = accountRepository.create({
+            accountNumber,
+            balance,
+            ownerName,
+            document,
         });
-        if (account) {
-            res.json({
-                numeroConta: account.accountNumber,
-                saldoAtual: account.balance,
-                nomeCliente: account.ownerName,
-            });
-        }
-        else {
-            res.status(404).json({ message: "Conta não encontrada" });
-        }
+        yield accountRepository.save(newAccount);
+        res.status(201).json({ message: "Conta criada com sucesso", data: newAccount });
     }
     catch (error) {
-        res.status(500).json({ message: "Erro ao buscar a conta", error });
+        console.error("Erro ao criar conta:", error);
+        res.status(500).json({ message: "Erro ao criar conta" });
     }
 }));
-exports.default = router;
+exports.default = router; // Alterado para exportação padrão

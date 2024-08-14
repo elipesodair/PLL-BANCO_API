@@ -1,52 +1,49 @@
 import { Router } from "express";
-import { Account } from "../models/Account";
-import { getRepository } from "typeorm";
+import { AppDataSource } from "../data-source";
+import Account from "../models/Account";
 
 const router = Router();
 
-// Rota para criar uma nova conta
-router.post("/account", async (req, res) => {
-  const { numeroConta, saldoAtual, nomeCliente } = req.body;
+// Endpoint para criar uma nova conta
+router.post("/", async (req, res) => {
+  const { accountNumber, balance, ownerName, document } = req.body;
 
-  // Criando uma nova instância de Account
-  const account = new Account();
-  account.accountNumber = numeroConta;
-  account.balance = saldoAtual;
-  account.ownerName = nomeCliente;
+  if (!accountNumber || balance === undefined || !ownerName || !document) {
+    return res.status(400).json({ message: "Dados incompletos para criar a conta" });
+  }
 
   try {
-    // Salvando a conta no banco de dados usando o TypeORM
-    const accountRepository = getRepository(Account);
-    await accountRepository.save(account);
+    const accountRepository = AppDataSource.getRepository(Account);
+    const account = new Account();
+    account.accountNumber = accountNumber;
+    account.balance = balance;
+    account.ownerName = ownerName;
+    account.document = document;
 
-    res.status(201).json(account);
+    await accountRepository.save(account);
+    res.status(201).json({ message: "Conta criada com sucesso", data: account });
   } catch (error) {
-    res.status(500).json({ message: "Erro ao criar a conta", error });
+    console.error("Erro ao criar conta:", error);
+    res.status(500).json({ message: "Erro ao criar conta" });
   }
 });
 
-// Rota para buscar uma conta pelo número da conta
-router.get("/account/:accountNumber", async (req, res) => {
-  const accountNumber = req.params.accountNumber;
+// Endpoint para obter uma conta pelo número da conta
+router.get("/:accountNumber", async (req, res) => {
+  const { accountNumber } = req.params;
 
   try {
-    // Buscando a conta no banco de dados pelo número da conta
-    const accountRepository = getRepository(Account);
-    const account = await accountRepository.findOne({
-      where: { accountNumber },
-    });
+    const accountRepository = AppDataSource.getRepository(Account);
+    const account = await accountRepository.findOneBy({ accountNumber });
 
-    if (account) {
-      res.json({
-        numeroConta: account.accountNumber,
-        saldoAtual: account.balance,
-        nomeCliente: account.ownerName,
-      });
-    } else {
-      res.status(404).json({ message: "Conta não encontrada" });
+    if (!account) {
+      return res.status(404).json({ message: "Conta não encontrada" });
     }
+
+    res.status(200).json({ data: account });
   } catch (error) {
-    res.status(500).json({ message: "Erro ao buscar a conta", error });
+    console.error("Erro ao obter conta:", error);
+    res.status(500).json({ message: "Erro ao obter conta" });
   }
 });
 

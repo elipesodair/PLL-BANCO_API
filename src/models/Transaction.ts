@@ -1,28 +1,19 @@
-// src/models/Transaction.ts
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
-import { Account } from "./Account";
+import Account from "./Account";
 
 @Entity()
-export class Transaction {
+class Transaction {
   @PrimaryGeneratedColumn()
-  id!: number; // Use "!" para indicar que o TypeScript deve ignorar a inicialização
+  id?: number;
 
   @Column()
-  type: string;
+  type!: string;
 
-  @Column("decimal", { precision: 10, scale: 2 })
-  amount: number;
-
-  @Column()
-  date: Date;
+  @Column('decimal', { precision: 10, scale: 2 })
+  amount!: number;
 
   @ManyToOne(() => Account, (account) => account.transactions)
-  account: Account;
-
-  constructor(type: string, amount: number, date: Date, account: Account) {
-    this.type = type;
-    this.amount = amount;
-    this.date = date;
-    this.account = account;
-  }
+  account!: Account;
 }
+
+export default Transaction;
