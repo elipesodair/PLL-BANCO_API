@@ -12,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+// src/routes/transactionRoutes.ts
 const express_1 = require("express");
 const data_source_1 = require("../data-source");
 const Transaction_1 = __importDefault(require("../models/Transaction"));
@@ -30,25 +31,30 @@ router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const newTransaction = transactionRepository.create({
             type,
             amount,
-            account, // Associa a transação à conta encontrada
+            account,
         });
         yield transactionRepository.save(newTransaction);
-        // Atualiza o saldo da conta
-        if (type === "deposit") {
-            account.balance += amount;
-        }
-        else if (type === "withdraw" && account.balance >= amount) {
-            account.balance -= amount;
-        }
-        else if (type === "withdraw" && account.balance < amount) {
-            return res.status(400).json({ message: "Saldo insuficiente" });
-        }
-        yield accountRepository.save(account);
         res.status(201).json({ message: "Transação criada com sucesso", data: newTransaction });
     }
     catch (error) {
         console.error("Erro ao criar transação:", error);
         res.status(500).json({ message: "Erro ao criar transação" });
+    }
+}));
+// Endpoint para obter uma transação pelo ID
+router.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    try {
+        const transactionRepository = data_source_1.AppDataSource.getRepository(Transaction_1.default);
+        const transaction = yield transactionRepository.findOneBy({ id: parseInt(id) });
+        if (!transaction) {
+            return res.status(404).json({ message: "Transação não encontrada" });
+        }
+        res.status(200).json({ data: transaction });
+    }
+    catch (error) {
+        console.error("Erro ao obter transação:", error);
+        res.status(500).json({ message: "Erro ao obter transação" });
     }
 }));
 exports.default = router;

@@ -2,12 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.validateToken = void 0;
 const validateToken = (req, res, next) => {
-    const token = req.headers["authorization"];
-    if (!token) {
-        return res.status(401).json({ message: "Token não fornecido." });
+    const authHeader = req.headers["authorization"];
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({ message: "Token não fornecido ou inválido." });
     }
+    const token = authHeader.split(" ")[1];
     // Lógica de validação do token (simulada aqui)
-    if (token === "Bearer YOUR_VALID_TOKEN") {
+    if (token === "YOUR_VALID_TOKEN") {
         return next();
     }
     res.status(401).json({ message: "Token inválido." });
