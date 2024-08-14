@@ -57,6 +57,7 @@ GET http://localhost:4000/account/001 - Obtenção de uma conta pelo número.
 GET http://localhost:4000/transaction/001 - Obtenção de uma transação pelo ID.
 
 ### Cabeçalhos
+Content-Type:  application/json
 Authorization: Bearer YOUR_VALID_TOKEN
 
 ### Corpo da requisição:
