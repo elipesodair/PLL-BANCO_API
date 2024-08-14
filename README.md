@@ -59,7 +59,7 @@ GET http://localhost:4000/transaction/001 - Obtenção de uma transação pelo I
 ### Cabeçalhos
 Authorization: Bearer YOUR_VALID_TOKEN
 
-###Corpo da requisição:
+### Corpo da requisição:
 POST /account
 {
   "accountNumber": "001",
