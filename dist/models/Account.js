@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const typeorm_1 = require("typeorm");
 const Transaction_1 = __importDefault(require("./Transaction"));
+// Define a entidade Account para o banco de dados
 let Account = class Account {
 };
 __decorate([

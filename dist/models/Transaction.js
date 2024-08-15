@@ -12,9 +12,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// src/models/Transaction.ts
 const typeorm_1 = require("typeorm");
 const Account_1 = __importDefault(require("./Account"));
+// Define a entidade Transaction para o banco de dados
 let Transaction = class Transaction {
 };
 __decorate([

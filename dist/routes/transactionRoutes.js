@@ -12,7 +12,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// src/routes/transactionRoutes.ts
 const express_1 = require("express");
 const data_source_1 = require("../data-source");
 const Transaction_1 = __importDefault(require("../models/Transaction"));
@@ -23,18 +22,40 @@ router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { accountNumber, type, amount } = req.body;
     try {
         const accountRepository = data_source_1.AppDataSource.getRepository(Account_1.default);
+        const transactionRepository = data_source_1.AppDataSource.getRepository(Transaction_1.default);
+        // Encontre a conta pelo número fornecido
         const account = yield accountRepository.findOneBy({ accountNumber });
         if (!account) {
             return res.status(404).json({ message: "Conta não encontrada" });
         }
-        const transactionRepository = data_source_1.AppDataSource.getRepository(Transaction_1.default);
+        // Atualiza o saldo da conta baseado no tipo de transação
+        if (type === "deposit") {
+            account.balance += amount;
+        }
+        else if (type === "withdraw") {
+            if (account.balance < amount) {
+                return res
+                    .status(400)
+                    .json({ message: "Saldo insuficiente para saque" });
+            }
+            account.balance -= amount;
+        }
+        else {
+            return res.status(400).json({ message: "Tipo de transação inválido" });
+        }
+        // Cria uma nova transação com os dados fornecidos
         const newTransaction = transactionRepository.create({
             type,
             amount,
             account,
         });
+        // Salva a nova transação e a conta atualizada no banco de dados
         yield transactionRepository.save(newTransaction);
-        res.status(201).json({ message: "Transação criada com sucesso", data: newTransaction });
+        yield accountRepository.save(account);
+        // Retorna uma resposta de sucesso
+        res
+            .status(201)
+            .json({ message: "Transação criada com sucesso", data: newTransaction });
     }
     catch (error) {
         console.error("Erro ao criar transação:", error);
@@ -46,7 +67,9 @@ router.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     const { id } = req.params;
     try {
         const transactionRepository = data_source_1.AppDataSource.getRepository(Transaction_1.default);
-        const transaction = yield transactionRepository.findOneBy({ id: parseInt(id) });
+        const transaction = yield transactionRepository.findOneBy({
+            id: parseInt(id),
+        });
         if (!transaction) {
             return res.status(404).json({ message: "Transação não encontrada" });
         }
